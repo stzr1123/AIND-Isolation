@@ -212,8 +212,62 @@ class MinimaxPlayer(IsolationPlayer):
         if self.time_left() < self.TIMER_THRESHOLD:
             raise SearchTimeout()
 
-        # TODO: finish this function!
-        raise NotImplementedError
+        max_score = None
+        best_move = (-1, -1)
+        legal_moves = game.get_legal_moves()
+        active_player = game.active_player
+
+        for move in legal_moves:
+            move_board = game.forecast_move(move)
+            score = self.min_value(move_board, depth-1, active_player)
+
+            if not max_score or score > max_score:
+                max_score = score
+                best_move = move
+
+        return best_move
+
+    def max_value(self, game, depth, active_player):
+        """
+        Maximizing node in the game's state tree.
+
+        :return: Return the maximum score for this node.
+        """
+        if self.time_left() < self.TIMER_THRESHOLD:
+            raise SearchTimeout()
+
+        legal_moves = game.get_legal_moves()
+        max_score = float("-inf")
+
+        if not legal_moves or depth <= 0:
+            return self.score(game, active_player)
+
+        for move in legal_moves:
+            move_board = game.forecast_move(move)
+            max_score = max(max_score, self.min_value(move_board, depth-1, active_player))
+
+        return max_score
+
+    def min_value(self, game, depth, active_player):
+        """
+        Minimizing node in the game's state tree.
+
+        :return: Return the minimum score for this node.
+        """
+        if self.time_left() < self.TIMER_THRESHOLD:
+            raise SearchTimeout()
+
+        legal_moves = game.get_legal_moves()
+        min_score = float("inf")
+
+        if not legal_moves or depth <= 0:
+            return self.score(game, active_player)
+
+        for move in legal_moves:
+            move_board = game.forecast_move(move)
+            min_score = min(min_score, self.max_value(move_board, depth-1, active_player))
+
+        return min_score
 
 
 class AlphaBetaPlayer(IsolationPlayer):
