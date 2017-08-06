@@ -244,7 +244,8 @@ class MinimaxPlayer(IsolationPlayer):
 
         for move in legal_moves:
             move_board = game.forecast_move(move)
-            max_score = max(max_score, self.min_value(move_board, depth-1, active_player))
+            max_score = max(max_score, self.min_value(move_board, depth-1,
+                                                      active_player))
 
         return max_score
 
@@ -265,7 +266,8 @@ class MinimaxPlayer(IsolationPlayer):
 
         for move in legal_moves:
             move_board = game.forecast_move(move)
-            min_score = min(min_score, self.max_value(move_board, depth-1, active_player))
+            min_score = min(min_score, self.max_value(move_board, depth-1,
+                                                      active_player))
 
         return min_score
 
@@ -308,8 +310,23 @@ class AlphaBetaPlayer(IsolationPlayer):
         """
         self.time_left = time_left
 
-        # TODO: finish this function!
-        raise NotImplementedError
+        # Initialize the best move so that this function returns something
+        # in case the search fails due to timeout
+        best_move = (-1, -1)
+        depth = 0
+
+        try:
+            # The try/except block will automatically catch the exception
+            # raised when the timer is about to expire.
+            while True:
+                best_move = self.alphabeta(game, depth)
+                depth += 1
+
+        except SearchTimeout:
+            pass  # Handle any actions required after timeout as needed
+
+        # Return the best move from the last completed search iteration
+        return best_move
 
     def alphabeta(self, game, depth, alpha=float("-inf"), beta=float("inf")):
         """Implement depth-limited minimax search with alpha-beta pruning as
@@ -359,5 +376,65 @@ class AlphaBetaPlayer(IsolationPlayer):
         if self.time_left() < self.TIMER_THRESHOLD:
             raise SearchTimeout()
 
-        # TODO: finish this function!
-        raise NotImplementedError
+        max_score = None
+        best_move = (-1, -1)
+        legal_moves = game.get_legal_moves()
+        active_player = game.active_player
+
+        for move in legal_moves:
+            move_board = game.forecast_move(move)
+            score = self.min_value(move_board, depth-1, alpha, beta, active_player)
+
+            if not max_score or score > max_score:
+                max_score = score
+                best_move = move
+
+        return best_move
+
+    def max_value(self, game, depth, alpha, beta, active_player):
+        """
+        """
+        if self.time_left() < self.TIMER_THRESHOLD:
+            raise SearchTimeout()
+
+        legal_moves = game.get_legal_moves()
+        max_score = float("-inf")
+
+        if not legal_moves or depth <= 0:
+            return self.score(game, active_player)
+
+        for move in legal_moves:
+            move_board = game.forecast_move(move)
+            max_score = max(max_score, self.min_value(move_board, depth-1,
+                                                      alpha, beta,
+                                                      active_player))
+            if max_score >= beta:
+                return max_score
+
+            alpha = max(alpha, max_score)
+
+        return max_score
+
+    def min_value(self, game, depth, alpha, beta, active_player):
+        """
+        """
+        if self.time_left() < self.TIMER_THRESHOLD:
+            raise SearchTimeout()
+
+        legal_moves = game.get_legal_moves()
+        min_score = float("inf")
+
+        if not legal_moves or depth <= 0:
+            return self.score(game, active_player)
+
+        for move in legal_moves:
+            move_board = game.forecast_move(move)
+            min_score = min(min_score, self.max_value(move_board, depth-1,
+                                                      alpha, beta,
+                                                      active_player))
+            if min_score <= alpha:
+                return min_score
+
+            beta = min(beta, min_score)
+
+        return min_score
