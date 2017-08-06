@@ -217,6 +217,9 @@ class MinimaxPlayer(IsolationPlayer):
         legal_moves = game.get_legal_moves()
         active_player = game.active_player
 
+        if depth == 0:
+            return best_move
+
         for move in legal_moves:
             move_board = game.forecast_move(move)
             score = self.min_value(move_board, depth-1, active_player)
@@ -381,9 +384,15 @@ class AlphaBetaPlayer(IsolationPlayer):
         legal_moves = game.get_legal_moves()
         active_player = game.active_player
 
+        if depth == 0:
+            return best_move
+
         for move in legal_moves:
             move_board = game.forecast_move(move)
-            score = self.min_value(move_board, depth-1, alpha, beta, active_player)
+            score = self.min_value(move_board, depth-1, alpha, beta,
+                                   active_player)
+
+            alpha = max(alpha, score)
 
             if not max_score or score > max_score:
                 max_score = score
@@ -393,6 +402,9 @@ class AlphaBetaPlayer(IsolationPlayer):
 
     def max_value(self, game, depth, alpha, beta, active_player):
         """
+        Maximizing node in the game's state tree with pruning.
+
+        :return: Return the maximum score for this node.
         """
         if self.time_left() < self.TIMER_THRESHOLD:
             raise SearchTimeout()
@@ -417,6 +429,9 @@ class AlphaBetaPlayer(IsolationPlayer):
 
     def min_value(self, game, depth, alpha, beta, active_player):
         """
+        Minimizing node in the game's state tree with pruning.
+
+        :return: Return the minimum score for this node.
         """
         if self.time_left() < self.TIMER_THRESHOLD:
             raise SearchTimeout()
